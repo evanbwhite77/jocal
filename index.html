@@ -81,7 +81,7 @@ button:focus-visible{outline:2px solid var(--oak);outline-offset:2px}
 .icon-btn:hover{border-color:var(--border-2);color:var(--text)}
 
 /* ── NAV ── */
-.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+.wrap{max-width:1380px;margin:0 auto;padding:0 20px}
 .nav-bar{display:flex;align-items:center;justify-content:space-between;padding:16px 0 10px}
 .nav-center{display:flex;align-items:center;gap:10px}
 .period-label{font-family:var(--font-d);font-size:1.55rem;font-weight:700;letter-spacing:-.03em;color:var(--text);min-width:200px;text-align:center;text-wrap:balance}
@@ -101,8 +101,8 @@ button:focus-visible{outline:2px solid var(--oak);outline-offset:2px}
 
 /* ── MONTH VIEW ── */
 .month-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
-.dow-hdr{background:var(--surface-2);text-align:center;padding:9px 4px 7px;font-size:0.7rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--text-3)}
-.dc{background:var(--surface);min-height:96px;padding:5px 6px 6px;position:relative;display:flex;flex-direction:column;cursor:default}
+.dow-hdr{background:var(--surface-2);text-align:center;padding:10px 4px 8px;font-size:0.76rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--text-3)}
+.dc{background:var(--surface);min-height:118px;padding:6px 7px 7px;position:relative;display:flex;flex-direction:column;cursor:default}
 .dc.empty{background:var(--surface-2);cursor:default}
 .dc.oak{background:var(--oak-lt)}
 .dc.pride{background:var(--pride-lt)}
@@ -110,27 +110,27 @@ button:focus-visible{outline:2px solid var(--oak);outline-offset:2px}
 .dc.tr.pride{background:linear-gradient(140deg,var(--oak-lt) 42%,var(--pride-lt) 42%)}
 .dc.today-cell{outline:2px solid var(--text);outline-offset:-2px;z-index:1}
 
-.dc-num{font-size:0.8rem;font-weight:600;color:var(--text);display:inline-flex;cursor:pointer;user-select:none;border-radius:50%;width:20px;height:20px;align-items:center;justify-content:center;flex-shrink:0;transition:opacity .13s}
+.dc-num{font-size:0.92rem;font-weight:600;color:var(--text);display:inline-flex;cursor:pointer;user-select:none;border-radius:50%;width:24px;height:24px;align-items:center;justify-content:center;flex-shrink:0;transition:opacity .13s}
 .dc-num:hover{opacity:.7}
-.dc-num.today-n{background:var(--text);color:var(--surface);font-size:0.72rem}
-.dc-num.ov-oak{background:var(--oak);color:#fff;font-size:0.72rem}
-.dc-num.ov-pride{background:var(--pride);color:#fff;font-size:0.72rem}
-.dc-num.ov-trans{background:var(--trans);color:#fff;font-size:0.72rem}
+.dc-num.today-n{background:var(--text);color:var(--surface);font-size:0.8rem}
+.dc-num.ov-oak{background:var(--oak);color:#fff;font-size:0.8rem}
+.dc-num.ov-pride{background:var(--pride);color:#fff;font-size:0.8rem}
+.dc-num.ov-trans{background:var(--trans);color:#fff;font-size:0.8rem}
 .dc.empty .dc-num{color:var(--text-3);cursor:default;pointer-events:none}
 
 .dc-top{display:flex;align-items:center;gap:3px;flex-wrap:wrap;min-height:20px}
 .tr-badge{display:inline-flex;align-items:center;font-size:.62rem;font-weight:600;color:var(--trans);background:var(--trans-lt);border-radius:3px;padding:1px 4px;white-space:nowrap}
 
 /* Exception: yellow background, no dot */
-.dc-exc{margin-top:3px;font-size:.61rem;font-weight:500;background:#FEF3C7;color:#92400E;border-radius:4px;padding:2px 5px;line-height:1.35;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.dc-exc{margin-top:3px;font-size:.67rem;font-weight:500;background:#FEF3C7;color:#92400E;border-radius:4px;padding:2px 5px;line-height:1.35;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 
 .dc-mid{display:flex;flex-direction:column;gap:2px;flex:1}
 .dc-bot{margin-top:auto;padding-top:3px}
 
 .dc-acts{display:flex;flex-direction:column;gap:2px;margin-top:2px}
-.act-chip{display:block;font-size:.62rem;font-weight:500;padding:1px 5px;border-radius:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.5}
+.act-chip{display:block;font-size:.68rem;font-weight:500;padding:1px 5px;border-radius:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.5}
 .dc-uevts{display:flex;flex-direction:column;gap:2px;margin-top:2px}
-.uevt-chip{display:block;font-size:.62rem;font-weight:500;padding:1px 5px;border-radius:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.5;cursor:pointer;border-left:2px solid currentColor}
+.uevt-chip{display:block;font-size:.68rem;font-weight:500;padding:1px 5px;border-radius:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.5;cursor:pointer;border-left:2px solid currentColor}
 .uevt-chip:hover{opacity:.75}
 
 /* ── PICK BADGES ── */
@@ -560,6 +560,9 @@ input[type="color"]{width:36px;height:28px;border:1.5px solid var(--border);bord
         <div style="margin-top:10px;font-size:.75rem;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em">Pickups &amp; dropoffs calendar ID</div>
         <div style="font-size:.75rem;color:var(--text-2);margin-bottom:3px">Leave blank to auto-create "JoCal – Pickups". School pickup/dropoff assignments for each day.</div>
         <input class="gcal-url-input" id="setGcalPickupsCalId" type="text" placeholder="xxxxx@group.calendar.google.com" autocomplete="off" spellcheck="false" style="margin-top:0">
+        <div style="margin-top:10px;font-size:.75rem;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em">Sync window (days forward)</div>
+        <div style="font-size:.75rem;color:var(--text-2);margin-bottom:3px">How many days ahead to sync custody blocks (default: 90).</div>
+        <input class="gcal-url-input" id="setGcalSyncDays" type="number" min="7" max="730" step="1" placeholder="90" autocomplete="off" style="margin-top:0;max-width:100px">
         <button class="gcal-sync-btn" id="gcalSyncBtn" onclick="syncToGCal()">⬆ Sync to Google Calendar</button>
         <div class="gcal-last-sync" id="gcalLastSyncLabel"></div>
       </div>
@@ -723,6 +726,7 @@ let SETTINGS = {
   gcalEventsCalId:    '',
   gcalCustodyCalId:   '',
   gcalPickupsCalId:   '',
+  gcalSyncDays:       90,
   people: JSON.parse(JSON.stringify(PERSON_DEFAULTS)),
 };
 
@@ -794,9 +798,10 @@ function ds(d) {
 }
 function todayStr() { return ds(new Date()); }
 
-function getLocFromPattern(pattern, startLoc, startDateStr, checkDateStr) {
+// Returns {loc, isTr} — last day of each pattern segment is a transition day
+function getInfoFromPattern(pattern, startLoc, startDateStr, checkDateStr) {
   const segs = pattern.split('/').map(s => parseInt(s, 10)).filter(n => n > 0);
-  if (!segs.length) return startLoc;
+  if (!segs.length) return { loc: startLoc, isTr: false };
   const other    = startLoc === 'oak' ? 'pride' : 'oak';
   const cycleLen = segs.reduce((a, b) => a + b, 0);
   const dayMs    = 24 * 60 * 60 * 1000;
@@ -805,9 +810,17 @@ function getLocFromPattern(pattern, startLoc, startDateStr, checkDateStr) {
   let cum = 0;
   for (let i = 0; i < segs.length; i++) {
     cum += segs[i];
-    if (pos < cum) return i % 2 === 0 ? startLoc : other;
+    if (pos < cum) {
+      return {
+        loc: i % 2 === 0 ? startLoc : other,
+        isTr: pos === cum - 1,   // last day of this segment = transition
+      };
+    }
   }
-  return startLoc;
+  return { loc: startLoc, isTr: false };
+}
+function getLocFromPattern(pattern, startLoc, startDateStr, checkDateStr) {
+  return getInfoFromPattern(pattern, startLoc, startDateStr, checkDateStr).loc;
 }
 
 function getInfo(str) {
@@ -815,8 +828,11 @@ function getInfo(str) {
   for (const c of USER_CUSTODY) {
     if (str >= c.s && str <= c.e) {
       const exc = EXCS.find(e => e.d === str);
-      const loc = c.pattern ? getLocFromPattern(c.pattern, c.loc, c.s, str) : c.loc;
-      return { loc, isTr: TRANS.has(str), isExc: !!exc, note: c.note || exc?.note || null };
+      if (c.pattern) {
+        const pi = getInfoFromPattern(c.pattern, c.loc, c.s, str);
+        return { loc: pi.loc, isTr: pi.isTr, isExc: !!exc, note: c.note || exc?.note || null };
+      }
+      return { loc: c.loc, isTr: TRANS.has(str), isExc: !!exc, note: c.note || exc?.note || null };
     }
   }
   // 2. Day-level number toggle
@@ -1338,6 +1354,7 @@ function openSettings() {
   document.getElementById('setGcalEventsCalId').value  = SETTINGS.gcalEventsCalId   || '';
   document.getElementById('setGcalCustodyCalId').value = SETTINGS.gcalCustodyCalId  || '';
   document.getElementById('setGcalPickupsCalId').value  = SETTINGS.gcalPickupsCalId  || '';
+  document.getElementById('setGcalSyncDays').value      = SETTINGS.gcalSyncDays      || 90;
   updateGcalLastSyncLabel();
   buildPersonColorRows();
 }
@@ -1359,14 +1376,21 @@ function updateGcalLastSyncLabel(msg, isError) {
   if (hBtn) hBtn.style.display = SETTINGS.gcalUrl ? '' : 'none';
 }
 let _syncToastTimer = null;
-function showSyncToast(msg, isError) {
+function showSyncToast(msg, isError, persistent) {
   const t = document.getElementById('syncToast');
   if (!t) return;
   clearTimeout(_syncToastTimer);
   t.textContent = msg;
   t.classList.toggle('error', !!isError);
   t.classList.add('show');
-  _syncToastTimer = setTimeout(() => t.classList.remove('show'), isError ? 6000 : 4000);
+  if (!persistent) {
+    _syncToastTimer = setTimeout(() => t.classList.remove('show'), isError ? 6000 : 4000);
+  }
+}
+function hideSyncToast() {
+  clearTimeout(_syncToastTimer);
+  const t = document.getElementById('syncToast');
+  if (t) t.classList.remove('show');
 }
 function closeSettings() {
   document.getElementById('settingsBackdrop').classList.add('hidden');
@@ -1531,23 +1555,40 @@ document.getElementById('setGcalPickupsCalId').addEventListener('change', e => {
   SETTINGS.gcalPickupsCalId = e.target.value.trim();
   saveState();
 });
+document.getElementById('setGcalSyncDays').addEventListener('change', e => {
+  const v = parseInt(e.target.value, 10);
+  SETTINGS.gcalSyncDays = (isFinite(v) && v >= 7) ? v : 90;
+  saveState();
+});
 
 /* ══ GCAL SYNC ══════════════════════════════════════════════════════════ */
 function buildCustodyBlocks(startStr, endStr) {
-  // Build plain location ranges for sync — no transition-day splitting
+  // Build location ranges for sync.
+  // Transition days (last day of each pattern segment, or days in TRANS set)
+  // are included in BOTH the ending block and the starting block of the next house.
   const blocks = [];
   let cur = null;
+  let prevStr  = null;
+  let prevInfo = null;
   const end = new Date(endStr + 'T12:00:00');
   for (let d = new Date(startStr + 'T12:00:00'); d <= end; d.setDate(d.getDate() + 1)) {
     const str  = ds(d);
     const info = getInfo(str);
-    if (!info) continue;
+    if (!info) { prevStr = str; prevInfo = null; continue; }
     if (cur && cur.loc === info.loc) {
       cur.end = str;
     } else {
-      if (cur) blocks.push(cur);
-      cur = { start: str, end: str, loc: info.loc };
+      if (cur) {
+        blocks.push(cur);
+        // If the previous day was a transition, start the new block there too (overlap)
+        const newStart = (prevInfo && prevInfo.isTr) ? prevStr : str;
+        cur = { start: newStart, end: str, loc: info.loc };
+      } else {
+        cur = { start: str, end: str, loc: info.loc };
+      }
     }
+    prevStr  = str;
+    prevInfo = info;
   }
   if (cur) blocks.push(cur);
   return blocks;
@@ -1583,10 +1624,11 @@ async function syncToGCal() {
 
   setDisabled(true);
   updateGcalLastSyncLabel('Syncing…');
-  showSyncToast('Syncing to Google Calendar…');
+  showSyncToast('Syncing to Google Calendar…', false, true /* persistent */);
 
-  const today   = todayStr();
-  const ninetyD = ds(new Date(Date.now() + 90 * 24 * 60 * 60 * 1000));
+  const today    = todayStr();
+  const syncDays = SETTINGS.gcalSyncDays || 90;
+  const ninetyD  = ds(new Date(Date.now() + syncDays * 24 * 60 * 60 * 1000));
 
   const payload = {
     action:           'sync',
@@ -1624,12 +1666,14 @@ async function syncToGCal() {
     saveState();
     const msg = '✓ Synced' + detail;
     updateGcalLastSyncLabel(msg);
+    hideSyncToast();
     showSyncToast(msg);
     setTimeout(() => { updateGcalLastSyncLabel(); setDisabled(false); }, 4000);
   } catch(err) {
     console.error('gCal sync error:', err);
     const msg = '✗ ' + (err.message || 'Failed to reach Apps Script');
     updateGcalLastSyncLabel(msg, true);
+    hideSyncToast();
     showSyncToast(msg, true);
     setTimeout(() => { updateGcalLastSyncLabel(); setDisabled(false); }, 6000);
   }
