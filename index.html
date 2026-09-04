@@ -384,8 +384,36 @@ input[type="color"]{width:36px;height:28px;border:1.5px solid var(--border);bord
             <option value="weekdays">Weekdays (Mon–Fri)</option>
             <option value="weekly">Every week</option>
             <option value="biweekly">Every two weeks</option>
-            <option value="monthly">Monthly (same date)</option>
+            <option value="monthly">Monthly</option>
+            <option value="yearly">Every year</option>
           </select>
+        </div>
+        <div class="modal-field hidden" id="evtMonthlyModeField">
+          <div class="modal-label">Monthly recurrence type</div>
+          <div style="display:flex;gap:8px">
+            <button class="who-chip selected" id="mmByDate">Same date</button>
+            <button class="who-chip" id="mmByDow">Same weekday</button>
+          </div>
+        </div>
+        <div class="modal-field hidden" id="evtMonthlyDowField">
+          <div class="modal-label">Which occurrence</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">
+            <button class="who-chip selected" data-mwk="1">1st</button>
+            <button class="who-chip" data-mwk="2">2nd</button>
+            <button class="who-chip" data-mwk="3">3rd</button>
+            <button class="who-chip" data-mwk="4">4th</button>
+            <button class="who-chip" data-mwk="5">5th</button>
+          </div>
+          <div class="modal-label">Day of week</div>
+          <div class="dow-grid" id="evtMonthlyDowGrid">
+            <button class="dow-chip" data-mdow="0">Su</button>
+            <button class="dow-chip" data-mdow="1">Mo</button>
+            <button class="dow-chip" data-mdow="2">Tu</button>
+            <button class="dow-chip" data-mdow="3">We</button>
+            <button class="dow-chip" data-mdow="4">Th</button>
+            <button class="dow-chip" data-mdow="5">Fr</button>
+            <button class="dow-chip" data-mdow="6">Sa</button>
+          </div>
         </div>
         <div class="modal-field" id="evtDateField">
           <label class="modal-label" for="evtDate">Date</label>
@@ -473,25 +501,25 @@ input[type="color"]{width:36px;height:28px;border:1.5px solid var(--border);bord
 
       <!-- PICKUPS TAB -->
       <div class="tab-pane" id="tabPickups">
-        <p class="modal-hint">Set who handles school drop-off and pick-up for a date range.</p>
-        <div class="modal-field">
-          <label class="modal-label" for="puFrom">From</label>
-          <input class="modal-input" id="puFrom" type="date">
+        <p class="modal-hint">Override school drop-off &amp; pick-up for a date range. Weekends auto-skip. Only set the slots you want to change — unset slots keep their defaults.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="modal-field">
+            <label class="modal-label" for="puFrom">From</label>
+            <input class="modal-input" id="puFrom" type="date">
+          </div>
+          <div class="modal-field">
+            <label class="modal-label" for="puTo">To (inclusive)</label>
+            <input class="modal-input" id="puTo" type="date">
+          </div>
         </div>
         <div class="modal-field">
-          <label class="modal-label" for="puTo">To (inclusive)</label>
-          <input class="modal-input" id="puTo" type="date">
-        </div>
-        <div class="modal-field">
-          <div class="modal-label">Days of week (blank = every day in range)</div>
+          <div class="modal-label">Limit to these days (blank = every weekday in range)</div>
           <div class="dow-grid" id="puDowGrid">
-            <button class="dow-chip" data-dow="0">Su</button>
             <button class="dow-chip" data-dow="1">Mo</button>
             <button class="dow-chip" data-dow="2">Tu</button>
             <button class="dow-chip" data-dow="3">We</button>
             <button class="dow-chip" data-dow="4">Th</button>
             <button class="dow-chip" data-dow="5">Fr</button>
-            <button class="dow-chip" data-dow="6">Sa</button>
           </div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
@@ -510,6 +538,14 @@ input[type="color"]{width:36px;height:28px;border:1.5px solid var(--border);bord
           <div class="modal-field">
             <div class="modal-label">Bodie — Pick-up</div>
             <select class="modal-input" id="puBoPick"></select>
+          </div>
+          <div class="modal-field">
+            <div class="modal-label">Drop-off time</div>
+            <select class="modal-input" id="puDropTime"></select>
+          </div>
+          <div class="modal-field">
+            <div class="modal-label">Pick-up time</div>
+            <select class="modal-input" id="puPickTime"></select>
           </div>
         </div>
       </div>
@@ -565,6 +601,38 @@ input[type="color"]{width:36px;height:28px;border:1.5px solid var(--border);bord
         <input class="gcal-url-input" id="setGcalSyncDays" type="number" min="7" max="730" step="1" placeholder="90" autocomplete="off" style="margin-top:0;max-width:100px">
         <button class="gcal-sync-btn" id="gcalSyncBtn" onclick="syncToGCal()">⬆ Sync to Google Calendar</button>
         <div class="gcal-last-sync" id="gcalLastSyncLabel"></div>
+      </div>
+      <div>
+        <div class="settings-sec-title">Pickup &amp; dropoff defaults</div>
+        <div style="font-size:.75rem;color:var(--text-2);margin-bottom:8px">Default assignments for school days. Specific dates or date-range overrides in the calendar will take priority.</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div>
+            <div style="font-size:.73rem;font-weight:600;color:var(--text-3);margin-bottom:3px">Jo — drop-off</div>
+            <select class="gcal-url-input" id="setOakJoDrop" style="margin:0;padding:5px 8px;font-size:.82rem"></select>
+          </div>
+          <div>
+            <div style="font-size:.73rem;font-weight:600;color:var(--text-3);margin-bottom:3px">Jo — pick-up</div>
+            <select class="gcal-url-input" id="setOakJoPick" style="margin:0;padding:5px 8px;font-size:.82rem"></select>
+          </div>
+          <div>
+            <div style="font-size:.73rem;font-weight:600;color:var(--text-3);margin-bottom:3px">Bodie — drop-off</div>
+            <select class="gcal-url-input" id="setOakBoDrop" style="margin:0;padding:5px 8px;font-size:.82rem"></select>
+          </div>
+          <div>
+            <div style="font-size:.73rem;font-weight:600;color:var(--text-3);margin-bottom:3px">Bodie — pick-up</div>
+            <select class="gcal-url-input" id="setOakBoPick" style="margin:0;padding:5px 8px;font-size:.82rem"></select>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+          <div>
+            <div style="font-size:.73rem;font-weight:600;color:var(--text-3);margin-bottom:3px">Default drop time</div>
+            <select class="gcal-url-input" id="setDefaultDropTime" style="margin:0;padding:5px 8px;font-size:.82rem"></select>
+          </div>
+          <div>
+            <div style="font-size:.73rem;font-weight:600;color:var(--text-3);margin-bottom:3px">Default pick time</div>
+            <select class="gcal-url-input" id="setDefaultPickTime" style="margin:0;padding:5px 8px;font-size:.82rem"></select>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -710,23 +778,31 @@ const PERSON_DEFAULTS = {
   MBP: { label:'MBP', name:'Mooshka & Big Poppa', color:'#78350F' },
   FE:  { label:'FE',  name:'Effie',               color:'#374151' },
 };
-const PERSON_KEYS = ['E','U','S','MBP','FE'];
+const PERSON_KEYS  = ['E','U','S','MBP','FE'];
+const SLOT_CYCLE   = [...PERSON_KEYS, 'NA'];  // NA = nobody / not applicable
 
 /* ══ USER STATE ═════════════════════════════════════════════════════════ */
 let USER_OVERRIDES = {};  // dateStr → 'oak'|'pride'
 let USER_EVENTS    = [];  // [{id,name,type,date?,dow?,color,who:[],notes}]
 let USER_CUSTODY   = [];  // [{id,s,e,loc,note}]
-let USER_PICKS     = [];  // [{id,s,e,jd,jp,bd,bp}]
-let SLOT_OVERRIDES = {};  // 'dateStr_slot' → personKey  (individual badge toggles)
+let USER_PICKS     = [];  // [{id,s,e,jd,jp,bd,bp,dropTime?,pickTime?}]
+let SLOT_OVERRIDES = {};  // 'dateStr_slot' → personKey|'NA'
 let SETTINGS = {
-  oakPrimary:   '#2D8B6E',
-  pridePrimary: '#6E4EA6',
-  gcalUrl:            '',
-  gcalLastSync:       null,
-  gcalEventsCalId:    '',
-  gcalCustodyCalId:   '',
-  gcalPickupsCalId:   '',
-  gcalSyncDays:       90,
+  oakPrimary:       '#2D8B6E',
+  pridePrimary:     '#6E4EA6',
+  gcalUrl:          '',
+  gcalLastSync:     null,
+  gcalEventsCalId:  '',
+  gcalCustodyCalId: '',
+  gcalPickupsCalId: '',
+  gcalSyncDays:     90,
+  // Pickup/dropoff defaults (Oak Grove school days)
+  oakJoDrop:        'U',
+  oakJoPick:        'FE',
+  oakBoDrop:        'U',
+  oakBoPick:        'FE',
+  defaultDropTime:  '08:15',
+  defaultPickTime:  '15:00',
   people: JSON.parse(JSON.stringify(PERSON_DEFAULTS)),
 };
 
@@ -798,7 +874,8 @@ function ds(d) {
 }
 function todayStr() { return ds(new Date()); }
 
-// Returns {loc, isTr} — last day of each pattern segment is a transition day
+// Returns {loc, isTr} — FIRST day of each pattern segment is a transition day
+// e.g. 7/7 at Oak: day 0 = transition→Oak, days 1-6 = Oak, day 7 = transition→Pride, days 8-13 = Pride, repeat
 function getInfoFromPattern(pattern, startLoc, startDateStr, checkDateStr) {
   const segs = pattern.split('/').map(s => parseInt(s, 10)).filter(n => n > 0);
   if (!segs.length) return { loc: startLoc, isTr: false };
@@ -809,11 +886,12 @@ function getInfoFromPattern(pattern, startLoc, startDateStr, checkDateStr) {
   const pos      = ((offset % cycleLen) + cycleLen) % cycleLen;
   let cum = 0;
   for (let i = 0; i < segs.length; i++) {
+    const segStart = cum;
     cum += segs[i];
     if (pos < cum) {
       return {
         loc: i % 2 === 0 ? startLoc : other,
-        isTr: pos === cum - 1,   // last day of this segment = transition
+        isTr: pos === segStart,  // first day of this segment = transition
       };
     }
   }
@@ -854,19 +932,28 @@ function getInfo(str) {
   return null;
 }
 
+// Returns pickup/dropoff assignments for any school weekday (Mon–Fri), null on weekends.
+// Priority: SLOT_OVERRIDES (applied by slotPerson) > USER_PICKS ranges > BASE_PICKS specific > SETTINGS defaults
 function getBasePick(str) {
-  const dow = new Date(str + 'T12:00:00').getDay();
-  let r = { jd: null, jp: null, bd: null, bp: null };
-  // Apply USER_PICKS entries in order; first non-empty value per slot wins
+  const date = new Date(str + 'T12:00:00');
+  const dow  = date.getDay();
+  if (dow === 0 || dow === 6) return null;  // no school on weekends
+
+  let r = { jd: null, jp: null, bd: null, bp: null, dropTime: null, pickTime: null };
+
+  // 1. USER_PICKS range overrides (first non-empty value per slot wins)
   for (const up of USER_PICKS) {
     if (str < up.s || str > up.e) continue;
     if (up.dow && up.dow.length > 0 && !up.dow.includes(dow)) continue;
-    if (!r.jd && up.jd) r.jd = up.jd;
-    if (!r.jp && up.jp) r.jp = up.jp;
-    if (!r.bd && up.bd) r.bd = up.bd;
-    if (!r.bp && up.bp) r.bp = up.bp;
+    if (!r.jd && up.jd)           r.jd      = up.jd;
+    if (!r.jp && up.jp)           r.jp      = up.jp;
+    if (!r.bd && up.bd)           r.bd      = up.bd;
+    if (!r.bp && up.bp)           r.bp      = up.bp;
+    if (!r.dropTime && up.dropTime) r.dropTime = up.dropTime;
+    if (!r.pickTime && up.pickTime) r.pickTime = up.pickTime;
   }
-  // Fill any remaining null slots from BASE_PICKS
+
+  // 2. BASE_PICKS specific-date entries (fill remaining nulls)
   const base = BASE_PICKS.find(p => p.d === str);
   if (base) {
     if (!r.jd) r.jd = base.jd;
@@ -874,7 +961,16 @@ function getBasePick(str) {
     if (!r.bd) r.bd = base.bd;
     if (!r.bp) r.bp = base.bp;
   }
-  return (r.jd || r.jp || r.bd || r.bp) ? r : null;
+
+  // 3. SETTINGS defaults (fill any still-null slots)
+  if (!r.jd)       r.jd       = SETTINGS.oakJoDrop       || 'U';
+  if (!r.jp)       r.jp       = SETTINGS.oakJoPick       || 'FE';
+  if (!r.bd)       r.bd       = SETTINGS.oakBoDrop       || 'U';
+  if (!r.bp)       r.bp       = SETTINGS.oakBoPick       || 'FE';
+  if (!r.dropTime) r.dropTime = SETTINGS.defaultDropTime || '08:15';
+  if (!r.pickTime) r.pickTime = SETTINGS.defaultPickTime || '15:00';
+
+  return r;
 }
 
 // Get effective person for a slot, applying SLOT_OVERRIDES
@@ -885,8 +981,8 @@ function slotPerson(str, slot, base) {
 
 function cycleSlot(str, slot, base) {
   const cur = slotPerson(str, slot, base);
-  const idx = PERSON_KEYS.indexOf(cur);
-  SLOT_OVERRIDES[str + '_' + slot] = PERSON_KEYS[(idx + 1) % PERSON_KEYS.length];
+  const idx = SLOT_CYCLE.indexOf(cur);
+  SLOT_OVERRIDES[str + '_' + slot] = SLOT_CYCLE[(idx + 1) % SLOT_CYCLE.length];
   saveState();
   render();
 }
@@ -901,7 +997,19 @@ function getUserEvents(str) {
     if (e.recurEnd   && str > e.recurEnd)   return false;
     if (e.type === 'daily')    return true;
     if (e.type === 'weekdays') return dow >= 1 && dow <= 5;
-    if (e.type === 'monthly')  return (e.dom || 1) === dom;
+    if (e.type === 'monthly') {
+      if (e.monthlyMode === 'dow') {
+        // e.g. 3rd Thursday
+        if (dow !== (e.dow ?? 0)) return false;
+        return Math.ceil(dom / 7) === (e.monthlyWk || 1);
+      }
+      return (e.dom || 1) === dom;
+    }
+    if (e.type === 'yearly') {
+      const ref = e.recurStart ? new Date(e.recurStart + 'T12:00:00') : (e.date ? new Date(e.date + 'T12:00:00') : null);
+      if (!ref) return false;
+      return ref.getMonth() === d.getMonth() && ref.getDate() === dom;
+    }
     if (e.type === 'weekly' || e.type === 'recurring') return e.dow === dow;
     if (e.type === 'biweekly') {
       if (e.dow !== dow) return false;
@@ -940,29 +1048,36 @@ function fmtTime(t) {
 
 /* ══ BADGE RENDER ═══════════════════════════════════════════════════════ */
 function badgeHTML(str, kidLetter, slot, personKey) {
-  if (!personKey) return '';
+  if (personKey === null || personKey === undefined) return '';
+  // 'NA' = nobody (gray dash badge; still clickable to cycle)
+  if (personKey === 'NA') {
+    return `<span class="pick-kid">${kidLetter}</span><button class="pick-badge" data-slot-date="${esc(str)}" data-slot="${esc(slot)}" style="background:var(--border-2);color:var(--text-3)" title="N/A">–</button>`;
+  }
   const p = SETTINGS.people[personKey] || PERSON_DEFAULTS[personKey];
   if (!p) return '';
   return `<span class="pick-kid">${kidLetter}</span><button class="pick-badge" data-slot-date="${esc(str)}" data-slot="${esc(slot)}" style="background:${esc(p.color)}" title="${esc(p.name)}">${esc(p.label)}</button>`;
 }
 
 function pickRowsHTML(str, info) {
-  if (!oakOn || !info) return { top: '', bot: '' };
+  if (!oakOn) return { top: '', bot: '' };
   const base = getBasePick(str);
-  const isOak = info.loc === 'oak';
+  if (!base) return { top: '', bot: '' };  // null on weekends
 
-  // Jo's badges only on oak days; Bodie always (he's at OG every day)
-  const joDrop = isOak ? (slotPerson(str, 'jd', base) || 'U')  : null;
-  const joPick = isOak ? (slotPerson(str, 'jp', base) || 'FE') : null;
-  const boDrop = slotPerson(str, 'bd', base) || 'U';
-  const boPick = slotPerson(str, 'bp', base) || 'FE';
+  // Jo's school is at Oak Grove — show her badges on Oak days OR any transition day
+  // (transition-to-Pride: she still gets dropped/picked up on the way; transition-to-Oak: normal)
+  const showJo = info && (info.loc === 'oak' || info.isTr);
+
+  const joDrop = showJo ? slotPerson(str, 'jd', base) : null;
+  const joPick = showJo ? slotPerson(str, 'jp', base) : null;
+  const boDrop = slotPerson(str, 'bd', base);   // Bodie is always at OG school
+  const boPick = slotPerson(str, 'bp', base);
 
   let top = '', bot = '';
-  if (joDrop || boDrop) {
-    top = `<div class="pick-row">${joDrop ? badgeHTML(str,'J','jd',joDrop) : ''}${boDrop ? badgeHTML(str,'B','bd',boDrop) : ''}</div>`;
+  if (joDrop !== null || boDrop !== null) {
+    top = `<div class="pick-row">${joDrop !== null ? badgeHTML(str,'J','jd',joDrop) : ''}${boDrop !== null ? badgeHTML(str,'B','bd',boDrop) : ''}</div>`;
   }
-  if (joPick || boPick) {
-    bot = `<div class="pick-row">${joPick ? badgeHTML(str,'J','jp',joPick) : ''}${boPick ? badgeHTML(str,'B','bp',boPick) : ''}</div>`;
+  if (joPick !== null || boPick !== null) {
+    bot = `<div class="pick-row">${joPick !== null ? badgeHTML(str,'J','jp',joPick) : ''}${boPick !== null ? badgeHTML(str,'B','bp',boPick) : ''}</div>`;
   }
   return { top, bot };
 }
@@ -1147,26 +1262,39 @@ function navigate(dir) {
 }
 
 /* ══ MODAL ══════════════════════════════════════════════════════════════ */
-let modalMode   = 'add';   // 'add' | 'edit'
-let editingId   = null;    // event id when editing
-let activeTab   = 'event';
-let evtType     = 'single';
-let evtColor    = '#E63946';
-let evtWho      = [];
-let evtDow      = -1;
-let cusLoc      = 'oak';
-let cusPattern  = '';
-let puDow       = [];      // days-of-week filter for pickups (empty = all)
+let modalMode    = 'add';   // 'add' | 'edit'
+let editingId    = null;    // event id when editing
+let activeTab    = 'event';
+let evtType      = 'single';
+let evtColor     = '#E63946';
+let evtWho       = [];
+let evtDow       = -1;
+let monthlyMode  = 'date';  // 'date' | 'dow'
+let monthlyWk    = 1;       // 1-5 (which occurrence of weekday in month)
+let evtMonthlyDow = 0;      // 0-6 day-of-week for monthly+dow mode
+let cusLoc       = 'oak';
+let cusPattern   = '';
+let puDow        = [];      // days-of-week filter for pickups (empty = all weekdays)
 
 function populatePersonSelects() {
-  const selects = ['puJoDrop','puJoPick','puBoDrop','puBoPick'];
-  selects.forEach(id => {
+  // Modal pickups tab — "no change" empty option
+  ['puJoDrop','puJoPick','puBoDrop','puBoPick'].forEach(id => {
     const el = document.getElementById(id);
+    if (!el) return;
     el.innerHTML = '<option value="">— no change —</option>' +
       PERSON_KEYS.map(k => {
         const p = SETTINGS.people[k];
         return `<option value="${k}">${p.name} (${p.label})</option>`;
       }).join('');
+  });
+  // Settings pickup defaults — no empty option (must have a value)
+  ['setOakJoDrop','setOakJoPick','setOakBoDrop','setOakBoPick'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.innerHTML = PERSON_KEYS.map(k => {
+      const p = SETTINGS.people[k];
+      return `<option value="${k}">${p.name} (${p.label})</option>`;
+    }).join('');
   });
 }
 
@@ -1205,9 +1333,20 @@ function openModal(dateStr, evtId) {
       document.getElementById('evtEnd').value   = evt.endTime || '';
       // Map legacy 'recurring' → 'weekly'
       const t = evt.type === 'recurring' ? 'weekly' : (evt.type || 'single');
+      // Restore monthly mode state before calling setEvtType
+      if (t === 'monthly') {
+        monthlyMode = evt.monthlyMode || 'date';
+        monthlyWk   = evt.monthlyWk   || 1;
+        evtMonthlyDow = evt.dow ?? 0;
+      }
       setEvtType(t);
       if (t === 'single') document.getElementById('evtDate').value = evt.date || dateStr || today;
       if (t === 'weekly' || t === 'biweekly') setEvtDow(evt.dow ?? 0);
+      if (t === 'monthly') {
+        setMonthlyMode(monthlyMode);
+        setMonthlyWk(monthlyWk);
+        setEvtMonthlyDow(evtMonthlyDow);
+      }
       document.getElementById('evtRecurStart').value = evt.recurStart || (t !== 'single' ? dateStr || today : '') || '';
       document.getElementById('evtRecurEnd').value   = evt.recurEnd || '';
       setEvtColor(evt.color || '#E63946');
@@ -1224,10 +1363,11 @@ function openModal(dateStr, evtId) {
     delBtn.classList.add('hidden');
     document.getElementById('evtName').value  = '';
     document.getElementById('evtNotes').value = '';
+    monthlyMode = 'date'; monthlyWk = 1; evtMonthlyDow = 0;
     setEvtType('single');
-    document.getElementById('evtDate').value      = dateStr || today;
-    document.getElementById('evtStart').value     = '';
-    document.getElementById('evtEnd').value       = '';
+    document.getElementById('evtDate').value       = dateStr || today;
+    document.getElementById('evtStart').value      = '';
+    document.getElementById('evtEnd').value        = '';
     document.getElementById('evtRecurStart').value = dateStr || today;
     document.getElementById('evtRecurEnd').value   = '';
     setEvtColor('#E63946');
@@ -1257,12 +1397,36 @@ function setEvtType(type) {
   evtType = type;
   const el = document.getElementById('evtRecur');
   if (el) el.value = type;
-  const isSingle = type === 'single';
-  const showDow  = type === 'weekly' || type === 'biweekly';
+  const isSingle  = type === 'single';
+  const showDow   = type === 'weekly' || type === 'biweekly';
+  const isMonthly = type === 'monthly';
   document.getElementById('evtDateField').classList.toggle('hidden', !isSingle);
   document.getElementById('evtDowField').classList.toggle('hidden', !showDow);
   document.getElementById('evtRecurStartField').classList.toggle('hidden', isSingle);
   document.getElementById('evtRecurEndField').classList.toggle('hidden', isSingle);
+  document.getElementById('evtMonthlyModeField').classList.toggle('hidden', !isMonthly);
+  document.getElementById('evtMonthlyDowField').classList.toggle('hidden', !(isMonthly && monthlyMode === 'dow'));
+}
+
+function setMonthlyMode(mode) {
+  monthlyMode = mode;
+  document.getElementById('mmByDate').classList.toggle('selected', mode === 'date');
+  document.getElementById('mmByDow').classList.toggle('selected', mode === 'dow');
+  document.getElementById('evtMonthlyDowField').classList.toggle('hidden', mode !== 'dow');
+}
+
+function setMonthlyWk(wk) {
+  monthlyWk = wk;
+  document.querySelectorAll('#evtMonthlyDowField [data-mwk]').forEach(b => {
+    b.classList.toggle('selected', parseInt(b.dataset.mwk) === wk);
+  });
+}
+
+function setEvtMonthlyDow(d) {
+  evtMonthlyDow = d;
+  document.querySelectorAll('#evtMonthlyDowGrid .dow-chip').forEach(c => {
+    c.classList.toggle('selected', parseInt(c.dataset.mdow) === d);
+  });
 }
 
 function setEvtColor(color) {
@@ -1297,12 +1461,18 @@ function saveModal() {
     const recurStart = evtType !== 'single' ? (document.getElementById('evtRecurStart').value || null) : undefined;
     const recurEnd   = evtType !== 'single' ? (document.getElementById('evtRecurEnd').value || null) : undefined;
     const showDow    = evtType === 'weekly' || evtType === 'biweekly';
+    const isMonthly  = evtType === 'monthly';
+    const isYearly   = evtType === 'yearly';
     const evtObj = {
       name, notes, color: evtColor, who: evtWho,
       type: evtType, startTime, endTime,
-      date:       evtType === 'single'  ? document.getElementById('evtDate').value : undefined,
-      dow:        showDow               ? evtDow : undefined,
-      dom:        evtType === 'monthly' ? (recurStart ? new Date(recurStart + 'T12:00:00').getDate() : undefined) : undefined,
+      date:        evtType === 'single' ? document.getElementById('evtDate').value : undefined,
+      dow:         showDow ? evtDow
+                   : (isMonthly && monthlyMode === 'dow') ? evtMonthlyDow
+                   : undefined,
+      dom:         (isMonthly && monthlyMode === 'date') ? (recurStart ? new Date(recurStart + 'T12:00:00').getDate() : undefined) : undefined,
+      monthlyMode: isMonthly ? monthlyMode : undefined,
+      monthlyWk:   (isMonthly && monthlyMode === 'dow') ? monthlyWk : undefined,
       recurStart, recurEnd,
     };
     if (modalMode === 'edit' && editingId) {
@@ -1323,13 +1493,17 @@ function saveModal() {
     const s = document.getElementById('puFrom').value;
     const e = document.getElementById('puTo').value;
     if (!s || !e || s > e) return;
-    USER_PICKS.push({
+    const dropTime = document.getElementById('puDropTime').value || '';
+    const pickTime = document.getElementById('puPickTime').value || '';
+    USER_PICKS.unshift({   // unshift so newer entries win in first-match priority
       id: uid(), s, e,
-      dow: puDow.length > 0 ? [...puDow] : undefined,
-      jd: document.getElementById('puJoDrop').value || '',
-      jp: document.getElementById('puJoPick').value || '',
-      bd: document.getElementById('puBoDrop').value || '',
-      bp: document.getElementById('puBoPick').value || '',
+      dow:      puDow.length > 0 ? [...puDow] : undefined,
+      jd:       document.getElementById('puJoDrop').value || '',
+      jp:       document.getElementById('puJoPick').value || '',
+      bd:       document.getElementById('puBoDrop').value || '',
+      bp:       document.getElementById('puBoPick').value || '',
+      dropTime: dropTime || '',
+      pickTime: pickTime || '',
     });
   }
   saveState();
@@ -1355,6 +1529,14 @@ function openSettings() {
   document.getElementById('setGcalCustodyCalId').value = SETTINGS.gcalCustodyCalId  || '';
   document.getElementById('setGcalPickupsCalId').value  = SETTINGS.gcalPickupsCalId  || '';
   document.getElementById('setGcalSyncDays').value      = SETTINGS.gcalSyncDays      || 90;
+  // Pickup defaults
+  populatePersonSelects();
+  document.getElementById('setOakJoDrop').value        = SETTINGS.oakJoDrop        || 'U';
+  document.getElementById('setOakJoPick').value        = SETTINGS.oakJoPick        || 'FE';
+  document.getElementById('setOakBoDrop').value        = SETTINGS.oakBoDrop        || 'U';
+  document.getElementById('setOakBoPick').value        = SETTINGS.oakBoPick        || 'FE';
+  document.getElementById('setDefaultDropTime').value  = SETTINGS.defaultDropTime  || '08:15';
+  document.getElementById('setDefaultPickTime').value  = SETTINGS.defaultPickTime  || '15:00';
   updateGcalLastSyncLabel();
   buildPersonColorRows();
 }
@@ -1561,54 +1743,112 @@ document.getElementById('setGcalSyncDays').addEventListener('change', e => {
   saveState();
 });
 
+// Monthly-mode chips (event modal)
+document.getElementById('mmByDate').addEventListener('click', () => setMonthlyMode('date'));
+document.getElementById('mmByDow').addEventListener('click',  () => setMonthlyMode('dow'));
+document.querySelectorAll('#evtMonthlyDowField [data-mwk]').forEach(b => {
+  b.addEventListener('click', () => setMonthlyWk(parseInt(b.dataset.mwk)));
+});
+document.querySelectorAll('#evtMonthlyDowGrid .dow-chip').forEach(c => {
+  c.addEventListener('click', () => setEvtMonthlyDow(parseInt(c.dataset.mdow)));
+});
+
+// Settings — pickup defaults
+document.getElementById('setOakJoDrop').addEventListener('change', e => { SETTINGS.oakJoDrop = e.target.value; saveState(); });
+document.getElementById('setOakJoPick').addEventListener('change', e => { SETTINGS.oakJoPick = e.target.value; saveState(); });
+document.getElementById('setOakBoDrop').addEventListener('change', e => { SETTINGS.oakBoDrop = e.target.value; saveState(); });
+document.getElementById('setOakBoPick').addEventListener('change', e => { SETTINGS.oakBoPick = e.target.value; saveState(); });
+document.getElementById('setDefaultDropTime').addEventListener('change', e => { SETTINGS.defaultDropTime = e.target.value; saveState(); });
+document.getElementById('setDefaultPickTime').addEventListener('change', e => { SETTINGS.defaultPickTime = e.target.value; saveState(); });
+
 /* ══ GCAL SYNC ══════════════════════════════════════════════════════════ */
 function buildCustodyBlocks(startStr, endStr) {
-  // Build location ranges for sync.
-  // Transition days (last day of each pattern segment, or days in TRANS set)
-  // are included in BOTH the ending block and the starting block of the next house.
+  // Build location ranges for gCal sync.
+  // Transition days are the FIRST day of each segment. They appear in BOTH the
+  // closing block of the previous house AND the opening block of the new house (overlap).
   const blocks = [];
   let cur = null;
-  let prevStr  = null;
-  let prevInfo = null;
   const end = new Date(endStr + 'T12:00:00');
   for (let d = new Date(startStr + 'T12:00:00'); d <= end; d.setDate(d.getDate() + 1)) {
     const str  = ds(d);
     const info = getInfo(str);
-    if (!info) { prevStr = str; prevInfo = null; continue; }
+    if (!info) continue;
     if (cur && cur.loc === info.loc) {
       cur.end = str;
     } else {
       if (cur) {
+        // If the incoming day is a transition, extend the closing block to include it (overlap)
+        if (info.isTr) cur.end = str;
         blocks.push(cur);
-        // If the previous day was a transition, start the new block there too (overlap)
-        const newStart = (prevInfo && prevInfo.isTr) ? prevStr : str;
-        cur = { start: newStart, end: str, loc: info.loc };
-      } else {
-        cur = { start: str, end: str, loc: info.loc };
       }
+      cur = { start: str, end: str, loc: info.loc };
     }
-    prevStr  = str;
-    prevInfo = info;
   }
   if (cur) blocks.push(cur);
   return blocks;
 }
 
+function addMinutes(timeStr, mins) {
+  if (!timeStr) return '';
+  const [h, m] = timeStr.split(':').map(Number);
+  const total  = h * 60 + m + mins;
+  return String(Math.floor(total / 60) % 24).padStart(2,'0') + ':' + String(total % 60).padStart(2,'0');
+}
+
 function buildPickupEvents() {
-  // Sync BASE_PICKS (the hardcoded school-day pickup schedule) to gCal
-  const ppl  = SETTINGS.people;
-  const name = k => (ppl[k] && ppl[k].name) ? ppl[k].name : (PERSON_DEFAULTS[k] ? PERSON_DEFAULTS[k].name : k);
-  const today = todayStr();
-  return BASE_PICKS
-    .filter(p => p.d >= today)   // only future dates
-    .map(p => ({
-      id:    'pick_' + p.d,
-      date:  p.d,
-      title: '🏫 Drop: ' + name(p.jd) + ' · Pick: ' + name(p.jp),
-      notes: (p.bd !== p.jd || p.bp !== p.jp)
-        ? 'Bodie — Drop: ' + name(p.bd) + ' · Pick: ' + name(p.bp)
-        : '',
-    }));
+  // Iterate all school weekdays in the sync window; emit two timed events per day
+  // (drop-off at dropTime, pick-up at pickTime) based on current effective assignments.
+  const ppl     = SETTINGS.people;
+  const name    = k => (ppl[k] && ppl[k].name) ? ppl[k].name : (PERSON_DEFAULTS[k] ? PERSON_DEFAULTS[k].name : k);
+  const today   = todayStr();
+  const syncDays = SETTINGS.gcalSyncDays || 90;
+  const endStr  = ds(new Date(Date.now() + syncDays * 24 * 60 * 60 * 1000));
+  const events  = [];
+
+  for (let d = new Date(today + 'T12:00:00'); ds(d) <= endStr; d.setDate(d.getDate() + 1)) {
+    const str  = ds(d);
+    const base = getBasePick(str);
+    if (!base) continue;  // weekends → null
+
+    const info   = getInfo(str);
+    const showJo = info && (info.loc === 'oak' || info.isTr);
+
+    const jdPerson = showJo ? slotPerson(str, 'jd', base) : null;
+    const bdPerson = slotPerson(str, 'bd', base);
+    const jpPerson = showJo ? slotPerson(str, 'jp', base) : null;
+    const bpPerson = slotPerson(str, 'bp', base);
+
+    // Drop-off event
+    const dropParts = [];
+    if (jdPerson && jdPerson !== 'NA') dropParts.push('Jo: ' + name(jdPerson));
+    if (bdPerson && bdPerson !== 'NA') dropParts.push('Bo: ' + name(bdPerson));
+    if (dropParts.length) {
+      const dropTime = base.dropTime || SETTINGS.defaultDropTime || '08:15';
+      events.push({
+        id:        'drop_' + str,
+        date:      str,
+        title:     '🏫↓ ' + dropParts.join(' · '),
+        startTime: dropTime,
+        endTime:   addMinutes(dropTime, 15),
+      });
+    }
+
+    // Pick-up event
+    const pickParts = [];
+    if (jpPerson && jpPerson !== 'NA') pickParts.push('Jo: ' + name(jpPerson));
+    if (bpPerson && bpPerson !== 'NA') pickParts.push('Bo: ' + name(bpPerson));
+    if (pickParts.length) {
+      const pickTime = base.pickTime || SETTINGS.defaultPickTime || '15:00';
+      events.push({
+        id:        'pick_' + str,
+        date:      str,
+        title:     '🏫↑ ' + pickParts.join(' · '),
+        startTime: pickTime,
+        endTime:   addMinutes(pickTime, 30),
+      });
+    }
+  }
+  return events;
 }
 
 async function syncToGCal() {
@@ -1788,6 +2028,13 @@ loadState();
 populatePersonSelects();
 buildTimeOptions('evtStart');
 buildTimeOptions('evtEnd');
+buildTimeOptions('puDropTime');
+buildTimeOptions('puPickTime');
+buildTimeOptions('setDefaultDropTime');
+buildTimeOptions('setDefaultPickTime');
+// Set initial default times for settings selects (populated values)
+document.getElementById('setDefaultDropTime').value = SETTINGS.defaultDropTime || '08:15';
+document.getElementById('setDefaultPickTime').value = SETTINGS.defaultPickTime || '15:00';
 updateGcalLastSyncLabel();
 render();
 </script>
