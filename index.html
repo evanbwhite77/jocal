@@ -263,6 +263,15 @@ input[type="color"]{width:36px;height:28px;border:1.5px solid var(--border);bord
 .gcal-sync-btn{width:100%;margin-top:9px;padding:9px;background:var(--oak);color:#fff;border:none;border-radius:var(--rs);font-family:var(--font-ui);font-size:.85rem;font-weight:600;cursor:pointer;transition:opacity .15s}
 .gcal-sync-btn:disabled{opacity:.55;cursor:not-allowed}
 .gcal-last-sync{font-size:.72rem;color:var(--text-3);margin-top:6px;text-align:center;min-height:1em}
+/* ── SYNC TOAST ── */
+#syncToast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--text);color:var(--bg);font-size:.8rem;font-weight:500;
+  padding:9px 18px;border-radius:20px;white-space:nowrap;
+  opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:9999;
+}
+#syncToast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#syncToast.error{background:#DC2626;color:#fff}
 
 /* ── PRINT ── */
 @media print {
@@ -301,6 +310,7 @@ input[type="color"]{width:36px;height:28px;border:1.5px solid var(--border);bord
 }
 </style>
 
+<div id="syncToast" role="status" aria-live="polite"></div>
 <header class="app-header">
   <h1 class="app-title">JoCal <span class="house-chips"><span class="house-chip oak"></span><span class="house-chip pride"></span></span></h1>
   <div class="view-switcher">
@@ -542,6 +552,9 @@ input[type="color"]{width:36px;height:28px;border:1.5px solid var(--border);bord
         <div style="margin-top:10px;font-size:.75rem;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em">Custody calendar ID</div>
         <div style="font-size:.75rem;color:var(--text-2);margin-bottom:3px">Leave blank to auto-create "JoCal – Custody".</div>
         <input class="gcal-url-input" id="setGcalCustodyCalId" type="text" placeholder="xxxxx@group.calendar.google.com" autocomplete="off" spellcheck="false" style="margin-top:0">
+        <div style="margin-top:10px;font-size:.75rem;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em">Pickups &amp; dropoffs calendar ID</div>
+        <div style="font-size:.75rem;color:var(--text-2);margin-bottom:3px">Leave blank to auto-create "JoCal – Pickups". School pickup/dropoff assignments for each day.</div>
+        <input class="gcal-url-input" id="setGcalPickupsCalId" type="text" placeholder="xxxxx@group.calendar.google.com" autocomplete="off" spellcheck="false" style="margin-top:0">
         <button class="gcal-sync-btn" id="gcalSyncBtn" onclick="syncToGCal()">⬆ Sync to Google Calendar</button>
         <div class="gcal-last-sync" id="gcalLastSyncLabel"></div>
       </div>
@@ -704,6 +717,7 @@ let SETTINGS = {
   gcalLastSync:       null,
   gcalEventsCalId:    '',
   gcalCustodyCalId:   '',
+  gcalPickupsCalId:   '',
   people: JSON.parse(JSON.stringify(PERSON_DEFAULTS)),
 };
 
@@ -1297,6 +1311,7 @@ function openSettings() {
   document.getElementById('setGcalUrl').value           = SETTINGS.gcalUrl           || '';
   document.getElementById('setGcalEventsCalId').value  = SETTINGS.gcalEventsCalId   || '';
   document.getElementById('setGcalCustodyCalId').value = SETTINGS.gcalCustodyCalId  || '';
+  document.getElementById('setGcalPickupsCalId').value  = SETTINGS.gcalPickupsCalId  || '';
   updateGcalLastSyncLabel();
   buildPersonColorRows();
 }
@@ -1316,6 +1331,16 @@ function updateGcalLastSyncLabel(msg, isError) {
   // Show/hide header sync button
   const hBtn = document.getElementById('gcalHeaderBtn');
   if (hBtn) hBtn.style.display = SETTINGS.gcalUrl ? '' : 'none';
+}
+let _syncToastTimer = null;
+function showSyncToast(msg, isError) {
+  const t = document.getElementById('syncToast');
+  if (!t) return;
+  clearTimeout(_syncToastTimer);
+  t.textContent = msg;
+  t.classList.toggle('error', !!isError);
+  t.classList.add('show');
+  _syncToastTimer = setTimeout(() => t.classList.remove('show'), isError ? 6000 : 4000);
 }
 function closeSettings() {
   document.getElementById('settingsBackdrop').classList.add('hidden');
@@ -1476,6 +1501,10 @@ document.getElementById('setGcalCustodyCalId').addEventListener('change', e => {
   SETTINGS.gcalCustodyCalId = e.target.value.trim();
   saveState();
 });
+document.getElementById('setGcalPickupsCalId').addEventListener('change', e => {
+  SETTINGS.gcalPickupsCalId = e.target.value.trim();
+  saveState();
+});
 
 /* ══ GCAL SYNC ══════════════════════════════════════════════════════════ */
 function buildCustodyBlocks(startStr, endStr) {
@@ -1498,6 +1527,20 @@ function buildCustodyBlocks(startStr, endStr) {
   return blocks;
 }
 
+function buildPickupEvents() {
+  // Transform USER_PICKS into named events for gCal sync
+  const ppl = SETTINGS.people;
+  const name = k => (ppl[k] && ppl[k].name) ? ppl[k].name : (PERSON_DEFAULTS[k] ? PERSON_DEFAULTS[k].name : k);
+  return USER_PICKS.map(p => ({
+    id:    'pick_' + p.d,
+    date:  p.d,
+    title: '🏫 Drop: ' + name(p.jd) + ' · Pick: ' + name(p.jp),
+    notes: p.bd !== p.jd || p.bp !== p.jp
+      ? 'Bodie — Drop: ' + name(p.bd) + ' · Pick: ' + name(p.bp)
+      : '',
+  }));
+}
+
 async function syncToGCal() {
   const url = SETTINGS.gcalUrl;
   if (!url) {
@@ -1511,6 +1554,7 @@ async function syncToGCal() {
 
   setDisabled(true);
   updateGcalLastSyncLabel('Syncing…');
+  showSyncToast('Syncing to Google Calendar…');
 
   const today   = todayStr();
   const ninetyD = ds(new Date(Date.now() + 90 * 24 * 60 * 60 * 1000));
@@ -1519,8 +1563,10 @@ async function syncToGCal() {
     action:           'sync',
     userEvents:       USER_EVENTS,
     custodyBlocks:    buildCustodyBlocks(today, ninetyD),
+    pickupEvents:     buildPickupEvents(),
     eventsCalId:      SETTINGS.gcalEventsCalId  || 'primary',
     custodyCalId:     SETTINGS.gcalCustodyCalId || '',
+    pickupsCalId:     SETTINGS.gcalPickupsCalId || '',
   };
 
   try {
@@ -1534,18 +1580,28 @@ async function syncToGCal() {
     try {
       const json = await resp.json();
       if (json.results) {
-        const u = json.results.userEvents   || {};
+        const u = json.results.userEvents    || {};
         const c = json.results.custodyBlocks || {};
-        detail = ` · ${(u.created||0)+(u.updated||0)} events, ${c.created||0} custody blocks`;
+        const p = json.results.pickupEvents  || {};
+        const parts = [];
+        const evtN = (u.created||0)+(u.updated||0);
+        if (evtN)           parts.push(evtN + ' event' + (evtN !== 1 ? 's' : ''));
+        if (c.created||0)   parts.push((c.created) + ' custody block' + (c.created !== 1 ? 's' : ''));
+        if (p.created||0)   parts.push((p.created) + ' pickup day' + (p.created !== 1 ? 's' : ''));
+        if (parts.length)   detail = ' · ' + parts.join(', ');
       }
     } catch(_) {}
     SETTINGS.gcalLastSync = new Date().toISOString();
     saveState();
-    updateGcalLastSyncLabel('✓ Synced' + detail);
+    const msg = '✓ Synced' + detail;
+    updateGcalLastSyncLabel(msg);
+    showSyncToast(msg);
     setTimeout(() => { updateGcalLastSyncLabel(); setDisabled(false); }, 4000);
   } catch(err) {
     console.error('gCal sync error:', err);
-    updateGcalLastSyncLabel('✗ ' + (err.message || 'Failed to reach Apps Script'), true);
+    const msg = '✗ ' + (err.message || 'Failed to reach Apps Script');
+    updateGcalLastSyncLabel(msg, true);
+    showSyncToast(msg, true);
     setTimeout(() => { updateGcalLastSyncLabel(); setDisabled(false); }, 6000);
   }
 }
