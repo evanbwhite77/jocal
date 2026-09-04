@@ -536,6 +536,12 @@ input[type="color"]{width:36px;height:28px;border:1.5px solid var(--border);bord
           Paste your Apps Script web app URL below to push JoCal events and custody blocks to Google Calendar.
         </div>
         <input class="gcal-url-input" id="setGcalUrl" type="url" placeholder="https://script.google.com/…/exec" autocomplete="off" spellcheck="false">
+        <div style="margin-top:10px;font-size:.75rem;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em">Events calendar ID</div>
+        <div style="font-size:.75rem;color:var(--text-2);margin-bottom:3px">Leave blank for your primary calendar. Find ID in GCal → ⋮ → Settings → Calendar ID.</div>
+        <input class="gcal-url-input" id="setGcalEventsCalId" type="text" placeholder="primary  or  you@gmail.com" autocomplete="off" spellcheck="false" style="margin-top:0">
+        <div style="margin-top:10px;font-size:.75rem;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em">Custody calendar ID</div>
+        <div style="font-size:.75rem;color:var(--text-2);margin-bottom:3px">Leave blank to auto-create "JoCal – Custody".</div>
+        <input class="gcal-url-input" id="setGcalCustodyCalId" type="text" placeholder="xxxxx@group.calendar.google.com" autocomplete="off" spellcheck="false" style="margin-top:0">
         <button class="gcal-sync-btn" id="gcalSyncBtn" onclick="syncToGCal()">⬆ Sync to Google Calendar</button>
         <div class="gcal-last-sync" id="gcalLastSyncLabel"></div>
       </div>
@@ -694,8 +700,10 @@ let SLOT_OVERRIDES = {};  // 'dateStr_slot' → personKey  (individual badge tog
 let SETTINGS = {
   oakPrimary:   '#2D8B6E',
   pridePrimary: '#6E4EA6',
-  gcalUrl:      '',
-  gcalLastSync: null,
+  gcalUrl:            '',
+  gcalLastSync:       null,
+  gcalEventsCalId:    '',
+  gcalCustodyCalId:   '',
   people: JSON.parse(JSON.stringify(PERSON_DEFAULTS)),
 };
 
@@ -1286,16 +1294,22 @@ function openSettings() {
   document.getElementById('settingsBackdrop').classList.remove('hidden');
   document.getElementById('setOak').value   = SETTINGS.oakPrimary;
   document.getElementById('setPride').value = SETTINGS.pridePrimary;
-  document.getElementById('setGcalUrl').value = SETTINGS.gcalUrl || '';
+  document.getElementById('setGcalUrl').value           = SETTINGS.gcalUrl           || '';
+  document.getElementById('setGcalEventsCalId').value  = SETTINGS.gcalEventsCalId   || '';
+  document.getElementById('setGcalCustodyCalId').value = SETTINGS.gcalCustodyCalId  || '';
   updateGcalLastSyncLabel();
   buildPersonColorRows();
 }
-function updateGcalLastSyncLabel() {
+function updateGcalLastSyncLabel(msg, isError) {
   const lbl = document.getElementById('gcalLastSyncLabel');
   if (!lbl) return;
-  if (SETTINGS.gcalLastSync) {
+  if (msg !== undefined) {
+    lbl.style.color = isError ? 'var(--trans)' : 'var(--text-3)';
+    lbl.textContent = msg;
+  } else if (SETTINGS.gcalLastSync) {
+    lbl.style.color = 'var(--text-3)';
     const d = new Date(SETTINGS.gcalLastSync);
-    lbl.textContent = 'Last synced: ' + d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+    lbl.textContent = 'Last synced ' + d.toLocaleDateString() + ' at ' + d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
   } else {
     lbl.textContent = '';
   }
@@ -1454,6 +1468,14 @@ document.getElementById('setGcalUrl').addEventListener('change', e => {
   saveState();
   updateGcalLastSyncLabel();
 });
+document.getElementById('setGcalEventsCalId').addEventListener('change', e => {
+  SETTINGS.gcalEventsCalId = e.target.value.trim();
+  saveState();
+});
+document.getElementById('setGcalCustodyCalId').addEventListener('change', e => {
+  SETTINGS.gcalCustodyCalId = e.target.value.trim();
+  saveState();
+});
 
 /* ══ GCAL SYNC ══════════════════════════════════════════════════════════ */
 function buildCustodyBlocks(startStr, endStr) {
@@ -1485,19 +1507,20 @@ async function syncToGCal() {
   }
   const syncBtn = document.getElementById('gcalSyncBtn');
   const hBtn    = document.getElementById('gcalHeaderBtn');
-  const setLabel = btn => { if (syncBtn) syncBtn.textContent = btn; if (hBtn) hBtn.title = btn; };
   const setDisabled = v => { if (syncBtn) syncBtn.disabled = v; if (hBtn) hBtn.disabled = v; };
 
-  setLabel('⏳ Syncing…');
   setDisabled(true);
+  updateGcalLastSyncLabel('Syncing…');
 
   const today   = todayStr();
   const ninetyD = ds(new Date(Date.now() + 90 * 24 * 60 * 60 * 1000));
 
   const payload = {
-    action:        'sync',
-    userEvents:    USER_EVENTS,
-    custodyBlocks: buildCustodyBlocks(today, ninetyD),
+    action:           'sync',
+    userEvents:       USER_EVENTS,
+    custodyBlocks:    buildCustodyBlocks(today, ninetyD),
+    eventsCalId:      SETTINGS.gcalEventsCalId  || 'primary',
+    custodyCalId:     SETTINGS.gcalCustodyCalId || '',
   };
 
   try {
@@ -1507,15 +1530,23 @@ async function syncToGCal() {
       body:    JSON.stringify(payload),
     });
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    let detail = '';
+    try {
+      const json = await resp.json();
+      if (json.results) {
+        const u = json.results.userEvents   || {};
+        const c = json.results.custodyBlocks || {};
+        detail = ` · ${(u.created||0)+(u.updated||0)} events, ${c.created||0} custody blocks`;
+      }
+    } catch(_) {}
     SETTINGS.gcalLastSync = new Date().toISOString();
     saveState();
-    updateGcalLastSyncLabel();
-    setLabel('✓ Synced');
-    setTimeout(() => { setLabel('⬆ Sync to Google Calendar'); setDisabled(false); }, 3000);
+    updateGcalLastSyncLabel('✓ Synced' + detail);
+    setTimeout(() => { updateGcalLastSyncLabel(); setDisabled(false); }, 4000);
   } catch(err) {
     console.error('gCal sync error:', err);
-    setLabel('✗ ' + (err.message || 'Error'));
-    setTimeout(() => { setLabel('⬆ Sync to Google Calendar'); setDisabled(false); }, 5000);
+    updateGcalLastSyncLabel('✗ ' + (err.message || 'Failed to reach Apps Script'), true);
+    setTimeout(() => { updateGcalLastSyncLabel(); setDisabled(false); }, 6000);
   }
 }
 
