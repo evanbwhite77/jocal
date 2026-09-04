@@ -454,7 +454,12 @@ input[type="color"]{width:36px;height:28px;border:1.5px solid var(--border);bord
           <input class="modal-input" id="cusTo" type="date">
         </div>
         <div class="modal-field">
-          <div class="modal-label">Location</div>
+          <label class="modal-label" for="cusPattern">Pattern (days per house, separated by /)</label>
+          <input class="modal-input" id="cusPattern" type="text" placeholder="e.g. 7/7 or 2/5/2/5 — leave blank for full range at one location">
+          <div style="font-size:.72rem;color:var(--text-3);margin-top:3px">Numbers alternate: first block at "Start at" location, next block at the other, repeating.</div>
+        </div>
+        <div class="modal-field">
+          <div class="modal-label">Start at location</div>
           <div class="loc-toggle">
             <button class="loc-btn act-oak" id="cusOak" data-loc="oak">🌿 Oak Grove</button>
             <button class="loc-btn" id="cusPride" data-loc="pride">🦁 Pride Rock</button>
@@ -789,12 +794,29 @@ function ds(d) {
 }
 function todayStr() { return ds(new Date()); }
 
+function getLocFromPattern(pattern, startLoc, startDateStr, checkDateStr) {
+  const segs = pattern.split('/').map(s => parseInt(s, 10)).filter(n => n > 0);
+  if (!segs.length) return startLoc;
+  const other    = startLoc === 'oak' ? 'pride' : 'oak';
+  const cycleLen = segs.reduce((a, b) => a + b, 0);
+  const dayMs    = 24 * 60 * 60 * 1000;
+  const offset   = Math.round((new Date(checkDateStr + 'T12:00:00') - new Date(startDateStr + 'T12:00:00')) / dayMs);
+  const pos      = ((offset % cycleLen) + cycleLen) % cycleLen;
+  let cum = 0;
+  for (let i = 0; i < segs.length; i++) {
+    cum += segs[i];
+    if (pos < cum) return i % 2 === 0 ? startLoc : other;
+  }
+  return startLoc;
+}
+
 function getInfo(str) {
   // 1. User custody overrides (ranges)
   for (const c of USER_CUSTODY) {
     if (str >= c.s && str <= c.e) {
       const exc = EXCS.find(e => e.d === str);
-      return { loc: c.loc, isTr: TRANS.has(str), isExc: !!exc, note: c.note || exc?.note || null };
+      const loc = c.pattern ? getLocFromPattern(c.pattern, c.loc, c.s, str) : c.loc;
+      return { loc, isTr: TRANS.has(str), isExc: !!exc, note: c.note || exc?.note || null };
     }
   }
   // 2. Day-level number toggle
@@ -1117,6 +1139,7 @@ let evtColor    = '#E63946';
 let evtWho      = [];
 let evtDow      = -1;
 let cusLoc      = 'oak';
+let cusPattern  = '';
 let puDow       = [];      // days-of-week filter for pickups (empty = all)
 
 function populatePersonSelects() {
@@ -1144,8 +1167,10 @@ function openModal(dateStr, evtId) {
 
   // Pre-fill date fields
   const today = todayStr();
-  document.getElementById('cusFrom').value = dateStr || today;
-  document.getElementById('cusTo').value   = dateStr || today;
+  document.getElementById('cusFrom').value    = dateStr || today;
+  document.getElementById('cusTo').value      = dateStr || today;
+  document.getElementById('cusPattern').value = '';
+  cusPattern = '';
   document.getElementById('puFrom').value  = dateStr || today;
   document.getElementById('puTo').value    = dateStr || today;
 
@@ -1274,8 +1299,9 @@ function saveModal() {
     const s = document.getElementById('cusFrom').value;
     const e = document.getElementById('cusTo').value;
     const note = document.getElementById('cusNote').value.trim();
+    const pat  = document.getElementById('cusPattern').value.trim();
     if (!s || !e || s > e) return;
-    USER_CUSTODY.push({ id: uid(), s, e, loc: cusLoc, note });
+    USER_CUSTODY.push({ id: uid(), s, e, loc: cusLoc, pattern: pat || null, note });
     USER_CUSTODY.sort((a,b) => a.s < b.s ? -1 : 1);
   } else if (activeTab === 'pickups') {
     const s = document.getElementById('puFrom').value;
@@ -1508,6 +1534,7 @@ document.getElementById('setGcalPickupsCalId').addEventListener('change', e => {
 
 /* ══ GCAL SYNC ══════════════════════════════════════════════════════════ */
 function buildCustodyBlocks(startStr, endStr) {
+  // Build plain location ranges for sync — no transition-day splitting
   const blocks = [];
   let cur = null;
   const end = new Date(endStr + 'T12:00:00');
@@ -1515,12 +1542,11 @@ function buildCustodyBlocks(startStr, endStr) {
     const str  = ds(d);
     const info = getInfo(str);
     if (!info) continue;
-    // Merge consecutive same-location non-transition days into one block
-    if (cur && cur.loc === info.loc && !info.isTr && !cur.isTr) {
+    if (cur && cur.loc === info.loc) {
       cur.end = str;
     } else {
       if (cur) blocks.push(cur);
-      cur = { start: str, end: str, loc: info.loc, isTr: info.isTr };
+      cur = { start: str, end: str, loc: info.loc };
     }
   }
   if (cur) blocks.push(cur);
@@ -1528,17 +1554,20 @@ function buildCustodyBlocks(startStr, endStr) {
 }
 
 function buildPickupEvents() {
-  // Transform USER_PICKS into named events for gCal sync
-  const ppl = SETTINGS.people;
+  // Sync BASE_PICKS (the hardcoded school-day pickup schedule) to gCal
+  const ppl  = SETTINGS.people;
   const name = k => (ppl[k] && ppl[k].name) ? ppl[k].name : (PERSON_DEFAULTS[k] ? PERSON_DEFAULTS[k].name : k);
-  return USER_PICKS.map(p => ({
-    id:    'pick_' + p.d,
-    date:  p.d,
-    title: '🏫 Drop: ' + name(p.jd) + ' · Pick: ' + name(p.jp),
-    notes: p.bd !== p.jd || p.bp !== p.jp
-      ? 'Bodie — Drop: ' + name(p.bd) + ' · Pick: ' + name(p.bp)
-      : '',
-  }));
+  const today = todayStr();
+  return BASE_PICKS
+    .filter(p => p.d >= today)   // only future dates
+    .map(p => ({
+      id:    'pick_' + p.d,
+      date:  p.d,
+      title: '🏫 Drop: ' + name(p.jd) + ' · Pick: ' + name(p.jp),
+      notes: (p.bd !== p.jd || p.bp !== p.jp)
+        ? 'Bodie — Drop: ' + name(p.bd) + ' · Pick: ' + name(p.bp)
+        : '',
+    }));
 }
 
 async function syncToGCal() {
